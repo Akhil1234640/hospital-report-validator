@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Report Transfer Validator</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+<header>
+  <div class="tag">PRODUCT 7 • GROUP VII</div>
+  <h1>Hospital Report Transfer Validator</h1>
+  <p>CRC32 File Integrity & Difference Detection</p>
+</header>
+
+<section class="intro">
+  <h2>Upload Reports</h2>
+  <p>Upload the original and received report. Supported formats: <b>Word (.docx)</b>, <b>CSV (.csv)</b> and <b>Excel (.xlsx)</b>.</p>
+</section>
+
+{% if error %}
+<div class="error">⚠ {{ error }}</div>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data">
+<div class="grid">
+  <section class="card">
+    <h3>1. Original / Sender File</h3>
+    <label for="original_file">Choose file</label>
+    <input id="original_file" name="original_file" type="file" accept=".docx,.csv,.xlsx" required>
+    <small>Maximum file size: 10 MB</small>
+  </section>
+
+  <section class="card">
+    <h3>2. Received / Receiver File</h3>
+    <label for="received_file">Choose file</label>
+    <input id="received_file" name="received_file" type="file" accept=".docx,.csv,.xlsx" required>
+    <small>Use the same file type for the clearest comparison.</small>
+  </section>
+</div>
+
+<button type="submit">Check Files & Compare CRC32</button>
+</form>
+
+{% if result %}
+<section class="result {{ 'accepted' if result.accepted else 'rejected' }}">
+  <h2>{{ '✓ REPORT ACCEPTED' if result.accepted else '✗ DIFFERENCE FOUND' }}</h2>
+  <p>{{ 'The extracted file contents are identical. CRC32 values match.' if result.accepted else 'The extracted file contents are different. CRC32 values do not match.' }}</p>
+
+  <div class="file-names">
+    <div><b>Original:</b> {{ result.original_name }}</div>
+    <div><b>Received:</b> {{ result.received_name }}</div>
+  </div>
+
+  <div class="crc-grid">
+    <div><span>Sender CRC32</span><strong>{{ result.sender_crc }}</strong></div>
+    <div><span>Receiver CRC32</span><strong>{{ result.receiver_crc }}</strong></div>
+  </div>
+
+  {% if not result.accepted %}
+  <div class="diff">
+    <h3>Detected Difference</h3>
+    <pre>{{ result.diff }}</pre>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="flow">
+<h2>How It Works</h2>
+<div class="flow-row">
+  <span>Upload Original</span><b>→</b>
+  <span>Read File</span><b>→</b>
+  <span>CRC32</span><b>→</b>
+  <span>Read Received</span><b>→</b>
+  <span>CRC32</span><b>→</b>
+  <span>Compare & Show Difference</span>
+</div>
+</section>
+
+<footer>Academic prototype • File contents are processed locally by the Flask application.</footer>
+</div>
+</body>
+</html>
